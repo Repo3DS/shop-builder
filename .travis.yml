@@ -1,0 +1,17 @@
+os:
+- linux
+language: cpp
+sudo: required
+services:
+- docker
+before_install:
+- eval `ssh-agent -s`
+- echo $KEY_FILE_B64 | base64 -d | DISPLAY=dummy SSH_ASKPASS=./askpass.sh ssh-add -
+- docker pull thecruel/cpp3ds
+script:
+- git clone --recursive https://notabug.org/btucker/freeShop.git
+- cd freeShop
+- docker run --rm -v "$PWD":/usr/project -w /usr/project thecruel/cpp3ds sh .build.sh
+after_success:
+- bash <(curl -s https://codecov.io/bash)
+- if [[ $TRAVIS_TAG ]]; then ../upload.sh && ../purge_cache.sh ; fi
